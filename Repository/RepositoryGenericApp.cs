@@ -30,7 +30,7 @@ namespace PortalVioo.Repository
 
         public TEntity Delete(int id)
         {
-            TEntity exist = tab.Find(id);
+            TEntity exist = tab.Find(id); 
             tab.Remove(exist);
             _context.SaveChanges();
 
