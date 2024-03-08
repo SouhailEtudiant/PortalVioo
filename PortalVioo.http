@@ -1,0 +1,6 @@
+@PortalVioo_HostAddress = http://localhost:5073
+
+GET {{PortalVioo_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
