@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PortalVioo.Interface;
 using PortalVioo.ModelsApp;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace PortalVioo.Controllers
 {
@@ -14,10 +16,19 @@ namespace PortalVioo.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            var list = _repository.GetAll(null, null);
-
-            return Ok(list);
+            try
+            {
+                var list = _repository.GetAll(null, null);
+                return Ok(list);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); };
+         
+           
         }
+           
+
+          
+        
 
         [HttpGet("GetID")]
         public IActionResult GetById([FromQuery] int id)
