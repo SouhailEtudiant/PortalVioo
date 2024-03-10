@@ -18,10 +18,18 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("premiereappdb")));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("premiereappdb"), buider =>
+        buider.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null)));
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//        options.UseSqlServer(builder.Configuration.GetConnectionString("premiereappdb")));
 builder.Services.AddScoped<IRepositoryGenericApp<ApplicationUser>, RepositoryGenericApp<ApplicationUser>>();
 builder.Services.AddScoped<IRepositoryGenericApp<ParamStatus>, RepositoryGenericApp<ParamStatus>>();
-
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.AutomaticAuthentication = false;
+    
+});
 // For Identity  
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -51,11 +59,10 @@ builder.Services.AddAuthentication(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 
 app.UseAuthorization();
 
