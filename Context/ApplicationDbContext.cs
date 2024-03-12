@@ -18,6 +18,9 @@ namespace PortalVioo.Context
         public DbSet<ParamPriorite> ParamPriorite { get; set; }
 
         public DbSet<ApplicationUser> AspNetUsers;
+        public DbSet<Projet> Projet { get; set; }
+        public DbSet<MembreProjet> MembreProjet { get; set; }
+
 
 
     }
