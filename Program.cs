@@ -34,6 +34,8 @@ builder.Services.Configure<IISServerOptions>(options =>
     options.AutomaticAuthentication = false;
     
 });
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 // For Identity  
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
