@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using MiniProjectBack.ModelsAuth;
 using PortalVioo.Interface;
 using PortalVioo.Models;
 using System;
@@ -25,21 +26,89 @@ namespace PortalVioo.Controllers
        
         private readonly IRepositoryGenericApp<ApplicationUser> _repository = repository;
 
-        //private string GetRoleByName(string roleName)
-        //{
-        //    roleName = roleName.ToUpper();
-        //    List<IdentityRole> roles = roleManager.Roles.Where(y => y.NormalizedName.Equals(roleName)).ToList();
 
-        //    return roles[0].Id;
-        //}
+        [HttpGet]
+        [Route("GetRoles")]
+        public IActionResult GetRoles()
+        {
 
+            List<IdentityRole> roles = roleManager.Roles.ToList();
+
+            return Ok(roles);
+        }
+
+        [HttpGet]
+        [Route("GetUserByUsername")]
+        public async Task<IActionResult> GetUserByUsername(string Username)
+        {
+            var user = await userManager.FindByNameAsync(Username);
+            var userRoles = await userManager.GetRolesAsync(user);
+            IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == userRoles[0].ToLower()).FirstOrDefault();
+            return Ok(new
+            {
+                username = Username,
+                email = user.Email,
+                Role = roles.Name,
+                RoleId = roles.Id,
+            });
+        }
+
+        [HttpPost]
+        [Route("ChangeRole")]
+        public async Task<IActionResult> ChangeRole([FromBody] ChangeRoleModel cr)
+        {
+            var user = await userManager.FindByNameAsync(cr.username);
+            var role = await userManager.GetRolesAsync(user);
+            IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == role[0].ToLower()).FirstOrDefault();
+            await userManager.RemoveFromRoleAsync(user, roles.Name);
+            var result = await userManager.AddToRoleAsync(user, cr.role);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+            else
+            { return Ok(cr.role); }
+
+        }
+
+
+
+        [HttpPost]
+        [Route("ChangePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel ch)
+        {
+            var user = await userManager.FindByNameAsync(ch.username);
+            ch.token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var resetPassResult = await userManager.ResetPasswordAsync(user, ch.token, ch.password);
+            var result = await userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                return BadRequest(result.Errors);
+            }
+            else
+            { return Ok(ch.password); }
+        }
 
         [HttpGet]
         [Route("GetAllUsers")]
-        public IActionResult GetAllUsers()
+        public async Task<IActionResult> GetAllUsers()
         {
-               var list = _repository.GetAll(null, null);
-            return Ok(list); 
+            List<getuserwthrole> listUserWithRole = new List<getuserwthrole>();
+            var listUser = _repository.GetAll(null, null);
+            foreach (var user in listUser)
+            {
+                var role = await userManager.GetRolesAsync(user);
+                IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == role[0].ToLower()).FirstOrDefault();
+                getuserwthrole usrsRole = new getuserwthrole();
+                usrsRole.UserId = user.Id;
+                usrsRole.RoleId = roles.Id;
+                usrsRole.Username = user.UserName;
+                usrsRole.Email = user.Email;
+                usrsRole.Role = roles.Name;
+                listUserWithRole.Add(usrsRole);
+
+            }
+            return Ok(listUserWithRole);
         }
 
         [HttpPost]
