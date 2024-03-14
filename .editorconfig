@@ -77,6 +77,11 @@ dotnet_diagnostic.CS8618.severity = none
 # CS8619: La nullabilité des types référence dans la valeur ne correspond pas au type cible.
 dotnet_diagnostic.CS8619.severity = none
 
+# CS8602: Déréférencement d'une éventuelle référence null.
+dotnet_diagnostic.CS8602.severity = none
+csharp_space_around_binary_operators = before_and_after
+csharp_indent_labels = one_less_than_current
+
 [*.vb]
 #### Styles de nommage ####
 
@@ -131,3 +136,5 @@ indent_size = 4
 
 # Default severity for all analyzer diagnostics
 dotnet_analyzer_diagnostic.severity = none
+end_of_line = crlf
+dotnet_style_operator_placement_when_wrapping = beginning_of_line

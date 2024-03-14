@@ -20,7 +20,7 @@ namespace PortalVioo.Context
         public DbSet<ApplicationUser> AspNetUsers;
         public DbSet<Projet> Projet { get; set; }
         public DbSet<MembreProjet> MembreProjet { get; set; }
-
+        public DbSet<Tache> Tache { get; set; }
 
 
     }

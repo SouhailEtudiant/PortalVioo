@@ -8,5 +8,7 @@ namespace PortalVioo.Models
     public class ApplicationUser : IdentityUser
     {
         public virtual ICollection<MembreProjet> MembreProjet { get; set; }
+        public virtual ICollection<Tache> Tache { get; set; }
+
     }
 }
