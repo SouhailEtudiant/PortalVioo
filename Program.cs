@@ -29,6 +29,8 @@ builder.Services.AddScoped<IRepositoryGenericApp<ParamPriorite>, RepositoryGener
 builder.Services.AddScoped<IRepositoryGenericApp<ParamType>, RepositoryGenericApp<ParamType>>();
 builder.Services.AddScoped<IRepositoryGenericApp<Projet>, RepositoryGenericApp<Projet>>();
 builder.Services.AddScoped<IRepositoryGenericApp<MembreProjet>, RepositoryGenericApp<MembreProjet>>();
+builder.Services.AddScoped<IRepositoryGenericApp<Tache>, RepositoryGenericApp<Tache>>();
+
 builder.Services.Configure<IISServerOptions>(options =>
 {
     options.AutomaticAuthentication = false;

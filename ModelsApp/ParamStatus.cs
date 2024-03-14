@@ -10,5 +10,8 @@ namespace PortalVioo.ModelsApp
         public int Id { get; set; }
         public required string LibelleStatus { get; set; }
 
+        public virtual ICollection<Tache> Tache { get; set; }
+
+
     }
 }

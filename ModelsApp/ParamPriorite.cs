@@ -8,6 +8,9 @@ namespace PortalVioo.ModelsApp
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public required string LibellePriorite { get; set; }   
+        public required string LibellePriorite { get; set; }
+        public virtual ICollection<Tache> Tache { get; set; }
+
+
     }
 }
