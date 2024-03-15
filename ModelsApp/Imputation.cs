@@ -4,22 +4,27 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PortalVioo.ModelsApp
 {
-    public class MembreProjet
+    public class Imputation
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int IdMembrePorjet { get; set; }
-        public string IdUtilisateur { get; set; }
+        public int Id { get; set; }
+
+        public DateOnly date {  get; set; }
+
+        public decimal chargeEnHeure { get; set;  }
 
         public bool IsActive { get; set; }
+
+        public string IdUtilisateur { get; set; }
 
         [ForeignKey("IdUtilisateur")]
         public virtual ApplicationUser? ApplicationUser { get; set; }
 
-        public int IdProjet { get; set; }
+        [Required]
+        public int IdTache { get; set; }
 
-        [ForeignKey("IdProjet")]
-        public virtual Projet?  Projet { get; set; }
-
+        [ForeignKey("IdTache")]
+        public virtual Tache? Tache { get; set; }
     }
 }
