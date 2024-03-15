@@ -30,6 +30,7 @@ builder.Services.AddScoped<IRepositoryGenericApp<ParamType>, RepositoryGenericAp
 builder.Services.AddScoped<IRepositoryGenericApp<Projet>, RepositoryGenericApp<Projet>>();
 builder.Services.AddScoped<IRepositoryGenericApp<MembreProjet>, RepositoryGenericApp<MembreProjet>>();
 builder.Services.AddScoped<IRepositoryGenericApp<Tache>, RepositoryGenericApp<Tache>>();
+builder.Services.AddScoped<IRepositoryGenericApp<Imputation>, RepositoryGenericApp<Imputation>>(); 
 
 builder.Services.Configure<IISServerOptions>(options =>
 {

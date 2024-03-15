@@ -17,6 +17,9 @@ namespace PortalVioo.ModelsApp
         public decimal ChargeReele {  get; set;}
         public DateOnly DateDebut { get; set;}
         public DateOnly DateFin { get; set;}
+        public bool IsActive { get; set; }
+        public virtual ICollection<Imputation>? Imputation { get; set; }
+
 
         public string IdUtilisateur { get; set; }
 

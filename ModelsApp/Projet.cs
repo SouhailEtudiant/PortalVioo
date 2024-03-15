@@ -11,9 +11,10 @@ namespace PortalVioo.ModelsApp
         public string ProjetTitre { get; set; }
         public string ProjetDescription { get; set; }
         public string ProjetImage { get; set; }
+        public bool IsActive { get; set; }
         public virtual ICollection<MembreProjet>? MembreProjet { get; set; }
 
-        public virtual ICollection<Tache> Tache { get; set; }
+        public virtual ICollection<Tache>? Tache { get; set; }
 
 
     }

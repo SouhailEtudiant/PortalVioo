@@ -10,5 +10,7 @@ namespace PortalVioo.Models
         public virtual ICollection<MembreProjet> MembreProjet { get; set; }
         public virtual ICollection<Tache> Tache { get; set; }
 
+        public virtual ICollection<Imputation> Imputation { get; set; }
+
     }
 }
