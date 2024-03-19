@@ -38,6 +38,14 @@ builder.Services.Configure<IISServerOptions>(options =>
     
 });
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy",
+        builder => builder.AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader());
+
+});
 
 // For Identity  
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
