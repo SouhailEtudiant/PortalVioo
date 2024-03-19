@@ -82,6 +82,14 @@ dotnet_diagnostic.CS8602.severity = none
 csharp_space_around_binary_operators = before_and_after
 csharp_indent_labels = one_less_than_current
 
+# CS8601: Existence possible d'une assignation de référence null.
+dotnet_diagnostic.CS8601.severity = none
+
+# CS9124: Le paramètre est capturé dans l'état du type englobant et sa valeur est également utilisée pour initialiser un champ, une propriété ou un événement.
+dotnet_diagnostic.CS9124.severity = none
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_prefer_not_pattern = true:suggestion
+
 [*.vb]
 #### Styles de nommage ####
 
