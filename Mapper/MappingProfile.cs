@@ -33,6 +33,12 @@ namespace PortalVioo.Mapper
              .ForMember(d => d.IdUtilisateur, i => i.MapFrom(src => src.ApplicationUser.Id))
              .ReverseMap();
 
+            CreateMap<Commentaire, CommentaireDTO>().ForMember(d => d.username, i => i.MapFrom(src => src.ApplicationUser.UserName))
+           .ForMember(d => d.TacheTitle, i => i.MapFrom(src => src.Tache.TacheTitre))
+            .ForMember(d => d.IdTache, i => i.MapFrom(src => src.Tache.Id))
+            .ForMember(d => d.CreePar, i => i.MapFrom(src => src.ApplicationUser.Id))
+            .ReverseMap();
+
 
         }
     }
