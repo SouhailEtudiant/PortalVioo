@@ -7,10 +7,12 @@ namespace PortalVioo.Models
     [Table("AspNetUsers")]
     public class ApplicationUser : IdentityUser
     {
-        public virtual ICollection<MembreProjet> MembreProjet { get; set; }
-        public virtual ICollection<Tache> Tache { get; set; }
+        public virtual ICollection<MembreProjet>? MembreProjet { get; set; }
+        public virtual ICollection<Tache>? Tache { get; set; }
 
-        public virtual ICollection<Imputation> Imputation { get; set; }
+        public virtual ICollection<Imputation>? Imputation { get; set; }
+        public virtual ICollection<Commentaire>? Commentaire { get; set; }
+
 
     }
 }

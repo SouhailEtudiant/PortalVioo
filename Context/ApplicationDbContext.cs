@@ -22,6 +22,6 @@ namespace PortalVioo.Context
         public DbSet<MembreProjet> MembreProjet { get; set; }
         public DbSet<Tache> Tache { get; set; }
         public DbSet<Imputation> Imputation { get; set; }
-
+        public DbSet<Commentaire> Commentaire { get; set; }
     }
 }

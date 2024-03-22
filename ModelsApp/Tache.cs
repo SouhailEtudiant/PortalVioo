@@ -19,6 +19,7 @@ namespace PortalVioo.ModelsApp
         public DateOnly DateFin { get; set;}
         public bool IsActive { get; set; }
         public virtual ICollection<Imputation>? Imputation { get; set; }
+        public virtual ICollection<Commentaire>? Commentaire { get; set; }
 
 
         public string IdUtilisateur { get; set; }
