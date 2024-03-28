@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PortalVioo.Interface;
 using PortalVioo.ModelsApp;
 
 namespace PortalVioo.Controllers
 {
+
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PrioriteController(IRepositoryGenericApp<ParamPriorite> repository) : ControllerBase
@@ -54,7 +57,17 @@ namespace PortalVioo.Controllers
 
         }
 
-        [HttpPost("DeleteParamPriorite")]
+
+        [HttpPost("ChangerStatus")]
+        public IActionResult Changertatus([FromBody] ParamPriorite clp)
+        {
+            clp.IsActive = ! clp.IsActive;
+            var result = _repository.Update(clp);
+            if (result != null) { return Ok(result); } else { return BadRequest("Vérifier corp objet !"); }
+
+        }
+
+        [HttpDelete("DeleteParamPriorite")]
         public IActionResult Delete([FromQuery] int id)
         {
             var result = _repository.Delete(id);

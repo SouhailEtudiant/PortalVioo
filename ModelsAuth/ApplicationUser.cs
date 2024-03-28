@@ -12,6 +12,10 @@ namespace PortalVioo.Models
 
         public virtual ICollection<Imputation>? Imputation { get; set; }
         public virtual ICollection<Commentaire>? Commentaire { get; set; }
+    
+        public string NomUser {  get; set; }
+        public string PrenomUser { get; set; }
+        public string? ImgPath { get; set; }
 
 
     }
