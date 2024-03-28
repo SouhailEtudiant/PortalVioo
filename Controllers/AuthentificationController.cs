@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PortalVioo.Controllers
@@ -50,6 +51,10 @@ namespace PortalVioo.Controllers
                 email = user.Email,
                 Role = roles.Name,
                 RoleId = roles.Id,
+                Phone = user.PhoneNumber,
+                ImgPath = user.ImgPath,
+                Nom = user.NomUser,
+                prenom = user.PrenomUser
             });
         }
 
@@ -60,8 +65,9 @@ namespace PortalVioo.Controllers
             var user = await userManager.FindByNameAsync(cr.username);
             var role = await userManager.GetRolesAsync(user);
             IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == role[0].ToLower()).FirstOrDefault();
-            await userManager.RemoveFromRoleAsync(user, roles.Name);
-            var result = await userManager.AddToRoleAsync(user, cr.role);
+            string roletoadd = roleManager.Roles.Where(x => x.Name.ToLower() == cr.role.ToLower()).FirstOrDefault().NormalizedName;
+            await userManager.RemoveFromRoleAsync(user, roles.NormalizedName);
+            var result = await userManager.AddToRoleAsync(user, roletoadd);
             if (!result.Succeeded)
             {
                 return BadRequest(result.Errors);
@@ -78,6 +84,16 @@ namespace PortalVioo.Controllers
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel ch)
         {
             var user = await userManager.FindByNameAsync(ch.username);
+            IdentityResult result2;
+            foreach (IPasswordValidator<ApplicationUser> passwordValidator in userManager.PasswordValidators)
+            {
+                result2 = await passwordValidator.ValidateAsync(userManager, user, ch.password);
+
+                if (!result2.Succeeded)
+                {
+                    return BadRequest(result2.Errors);
+                }
+            }
             ch.token = await userManager.GeneratePasswordResetTokenAsync(user);
             var resetPassResult = await userManager.ResetPasswordAsync(user, ch.token, ch.password);
             var result = await userManager.UpdateAsync(user);
@@ -86,7 +102,7 @@ namespace PortalVioo.Controllers
                 return BadRequest(result.Errors);
             }
             else
-            { return Ok(ch.password); }
+            { return Ok(new { ch.password }); }
         }
 
         [HttpGet]
@@ -102,9 +118,13 @@ namespace PortalVioo.Controllers
                 getuserwthrole usrsRole = new getuserwthrole();
                 usrsRole.UserId = user.Id;
                 usrsRole.RoleId = roles.Id;
+                usrsRole.RoleNormalizedName = roles.NormalizedName;
                 usrsRole.Username = user.UserName;
                 usrsRole.Email = user.Email;
                 usrsRole.Role = roles.Name;
+                usrsRole.nom = user.NomUser;
+                usrsRole.prenom = user.PrenomUser;
+                usrsRole.imagePath = user.ImgPath;
                 listUserWithRole.Add(usrsRole);
 
             }
@@ -140,41 +160,82 @@ namespace PortalVioo.Controllers
                     claims: authClaims,
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                     );
+                var tk = new JwtSecurityTokenHandler().WriteToken(token);
+
+                //Response.Cookies.Append("X-Access-Token", tk, new CookieOptions() { HttpOnly = true, SameSite = SameSiteMode.Strict , Expires= DateTime.Now.AddMinutes(50)});
+
 
                 return Ok(new
                 {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    token = tk,
                     expiration = token.ValidTo,
-                    Role = userRoles[0]
+                    role = userRoles[0],
+                    nom = user.NomUser ,
+                    prenom = user.PrenomUser ,
+                    img =user.ImgPath,
+                    username = user.UserName
                 });
             }
             return Unauthorized();
         }
 
 
+
+
+
         [HttpPost]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model, string Role)
         {
-            var userExists = await userManager.FindByNameAsync(model.Username);
-            if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
-
+            IdentityResult result;
             ApplicationUser user = new()
             {
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
+                UserName = model.Username,
+                NomUser = model.NomUser,
+                PrenomUser = model.PrenomUser,
+                ImgPath = model.ImagePath,
+                PhoneNumber = model.phone
+
+
             };
-            var result = await userManager.CreateAsync(user, model.Password);
+            foreach (IPasswordValidator<ApplicationUser> passwordValidator in userManager.PasswordValidators)
+            {
+                result = await passwordValidator.ValidateAsync(userManager, user, model.Password);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors);
+                }
+            }
+            var userExists = await userManager.FindByNameAsync(model.Username);
+            if (userExists != null)
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
+
+            ApplicationUser user2 = new()
+            {
+                Email = model.Email,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                UserName = model.Username,
+                NomUser=model.NomUser,
+                PrenomUser=model.PrenomUser,
+                ImgPath=model.ImagePath,
+                PhoneNumber = model.phone
+                
+                
+            };
+            var result2 = await userManager.CreateAsync(user, model.Password);
             await userManager.AddToRoleAsync(user, Role);
             if (await roleManager.RoleExistsAsync(Role))
             {
                 await userManager.AddToRoleAsync(user, Role);
             }
-            if (!result.Succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-
+            if (!result2.Succeeded)
+            {               
+                    return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message ="error" });   
+            }
+              
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });
         }
 

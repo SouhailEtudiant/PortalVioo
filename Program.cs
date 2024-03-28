@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using PortalVioo.Context;
 using PortalVioo.Interface;
 using PortalVioo.Models;
@@ -17,7 +20,33 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(option =>
+{
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
+    option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    option.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type=ReferenceType.SecurityScheme,
+                    Id="Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
+});
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseSqlServer(builder.Configuration.GetConnectionString("premiereappdb"), buider =>
         buider.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null)));
@@ -32,6 +61,7 @@ builder.Services.AddScoped<IRepositoryGenericApp<MembreProjet>, RepositoryGeneri
 builder.Services.AddScoped<IRepositoryGenericApp<Tache>, RepositoryGenericApp<Tache>>();
 builder.Services.AddScoped<IRepositoryGenericApp<Imputation>, RepositoryGenericApp<Imputation>>();
 builder.Services.AddScoped<IRepositoryGenericApp<Commentaire>, RepositoryGenericApp<Commentaire>>();
+ 
 
 builder.Services.Configure<IISServerOptions>(options =>
 {
@@ -41,11 +71,10 @@ builder.Services.Configure<IISServerOptions>(options =>
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("CorsPolicy",
-        builder => builder.AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader());
-
+    options.AddPolicy("AllowAll", builder =>
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader());
 });
 
 // For Identity  
@@ -73,17 +102,31 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
     };
+
 });
+
+builder.Services.Configure<FormOptions>(o =>
+{
+    o.ValueLengthLimit = int.MaxValue;
+    o.MultipartBodyLengthLimit = int.MaxValue;
+    o.MemoryBufferThreshold = int.MaxValue;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
     app.UseSwagger();
     app.UseSwaggerUI();
-
-
+app.UseCors("AllowAll");
+app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions()
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"Resources")),
+    RequestPath = new PathString("/Resources")
+});
 app.UseAuthorization();
-
+ 
 app.MapControllers();
 
 app.Run();

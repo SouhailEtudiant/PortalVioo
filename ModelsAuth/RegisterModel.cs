@@ -13,5 +13,15 @@ namespace PortalVioo.Models
 
         [Required(ErrorMessage = "Password is required")]
         public required string Password { get; set; }
+
+        [Required(ErrorMessage = "Nom is required")]
+        public string NomUser { get; set; }
+
+        [Required(ErrorMessage = "Prenom is required")]
+        public string PrenomUser { get; set; }
+
+        public string phone { get; set; }
+
+        public string? ImagePath { get; set; }
     }
 }
