@@ -54,7 +54,7 @@ namespace PortalVioo.Controllers
 
         }
 
-        [HttpPost("DeleteProjet")]
+        [HttpDelete("DeleteProjet")]
         public IActionResult Delete([FromQuery] int id)
         {
             var result = _repository.Delete(id);

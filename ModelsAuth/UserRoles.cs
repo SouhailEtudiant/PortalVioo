@@ -2,8 +2,8 @@
 {
     public class UserRoles
     {
-        public const string ADMIN = "Adminstrateur";
+        public const string ADMINSTRATEUR = "Adminstrateur";
         public const string GESTIONNAIRE = "Gestionnaire";
-        public const string DEV = "Developpeur";
+        public const string DEVELOPPEUR = "Developpeur";
     }
 }

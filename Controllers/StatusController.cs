@@ -25,10 +25,17 @@ namespace PortalVioo.Controllers
          
            
         }
-           
 
-          
-        
+        [HttpPost("ChangerStatus")]
+        public IActionResult Changertatus([FromBody] ParamStatus clp)
+        {
+            clp.IsActive = !clp.IsActive;
+            var result = _repository.Update(clp);
+            if (result != null) { return Ok(result); } else { return BadRequest("Vérifier corp objet !"); }
+
+        }
+
+
 
         [HttpGet("GetID")]
         public IActionResult GetById([FromQuery] int id)
@@ -56,7 +63,7 @@ namespace PortalVioo.Controllers
 
         }
 
-        [HttpPost("DeleteParamStatus")]
+        [HttpDelete("DeleteParamStatus")]
         public IActionResult Delete([FromQuery] int id)
         {
             var result = _repository.Delete(id);

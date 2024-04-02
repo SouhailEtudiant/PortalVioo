@@ -8,6 +8,7 @@ using MiniProjectBack.ModelsAuth;
 using PortalVioo.Interface;
 using PortalVioo.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -19,12 +20,12 @@ namespace PortalVioo.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthentificationController(IRepositoryGenericApp<ApplicationUser> repository, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration) : ControllerBase
+    public class AuthentificationController(IEmailSender emailSender,IRepositoryGenericApp<ApplicationUser> repository, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration) : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager = userManager;
         private readonly RoleManager<IdentityRole> roleManager = roleManager;
         private readonly IConfiguration _configuration = configuration;
-       
+        private readonly IEmailSender _emailSender = emailSender;
         private readonly IRepositoryGenericApp<ApplicationUser> _repository = repository;
 
 
@@ -37,6 +38,60 @@ namespace PortalVioo.Controllers
 
             return Ok(roles);
         }
+
+        [HttpPost]
+        [Route("AddRole")]
+        public async Task<IActionResult> AddRole(string role)
+        {
+
+            bool x = await roleManager.RoleExistsAsync(role);
+            if (!x)
+            {
+                // first we create Admin rool    
+                var roles = new IdentityRole();
+                roles.Name = role;
+               // roles.NormalizedName =NormalizedName;
+                await roleManager.CreateAsync(roles);
+                return Ok( new { role });
+            }
+            else return BadRequest();
+        }
+
+        [HttpPost]
+        [Route("CHECKROLE")]
+        public async Task<IActionResult> CHECKROLE(string role)
+        {
+            bool exist = true;
+            int i = 0;
+            var listUser = _repository.GetAll(null, null);
+            while (exist = true && i < listUser.Count)
+            {
+                var roleUser = await userManager.GetRolesAsync(listUser[i]);
+                IdentityRole rolesCheck = roleManager.Roles.Where(x => x.Name.ToLower() == roleUser[0].ToLower()).FirstOrDefault();
+                if (rolesCheck.Name.ToLower()== role.ToLower()) { exist = true; }
+                else { i++; }
+            }
+            if (exist) { return BadRequest("role exist in a user"); }
+            else { return Ok("great"); }
+        }
+
+
+
+        [HttpPost]
+        [Route("DeleteRole")]
+        public async Task<IActionResult> DeleteRole(string role)
+        {
+           
+
+            var roles = await roleManager.FindByNameAsync(role);
+            var result = await roleManager.DeleteAsync(roles);
+            if (result.Succeeded)
+            { 
+                return Ok(new { role });
+            }
+            else return BadRequest();
+        }
+
 
         [HttpGet]
         [Route("GetUserByUsername")]
@@ -73,7 +128,7 @@ namespace PortalVioo.Controllers
                 return BadRequest(result.Errors);
             }
             else
-            { return Ok(cr.role); }
+            { return Ok( cr.role); }
 
         }
 
@@ -102,7 +157,10 @@ namespace PortalVioo.Controllers
                 return BadRequest(result.Errors);
             }
             else
-            { return Ok(new { ch.password }); }
+            {
+                _emailSender.SendEmail(user.Email, "Changement Mot de Passe",ch.password);
+                return Ok(new { ch.password });
+            }
         }
 
         [HttpGet]
@@ -129,6 +187,36 @@ namespace PortalVioo.Controllers
 
             }
             return Ok(listUserWithRole);
+        }
+
+        [HttpGet]
+        [Route("GetGestionnaire")]
+        public async Task<IActionResult> GetGestionnaire()
+        {
+            List<getuserwthrole> listUserWithRole = new List<getuserwthrole>();
+            List<getuserwthrole> filteredList = new List<getuserwthrole>();
+            var listUser = _repository.GetAll(null, null);
+            foreach (var user in listUser)
+            {
+                var role = await userManager.GetRolesAsync(user);
+                IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == role[0].ToLower()).FirstOrDefault();
+                getuserwthrole usrsRole = new getuserwthrole();
+              
+                usrsRole.UserId = user.Id;
+                usrsRole.RoleId = roles.Id;
+                usrsRole.RoleNormalizedName = roles.NormalizedName;
+                usrsRole.Username = user.UserName;
+                usrsRole.Email = user.Email;
+                usrsRole.Role = roles.Name;
+                usrsRole.nom = user.NomUser;
+                usrsRole.prenom = user.PrenomUser;
+                usrsRole.imagePath = user.ImgPath;
+                listUserWithRole.Add(usrsRole);
+                filteredList = listUserWithRole.Where(x => x.RoleNormalizedName== "GESTIONNAIRE").ToList();
+
+
+            }
+            return Ok(filteredList);
         }
 
         [HttpPost]
@@ -256,18 +344,6 @@ namespace PortalVioo.Controllers
             var result = await userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-
-            if (!await roleManager.RoleExistsAsync(UserRoles.ADMIN))
-                await roleManager.CreateAsync(new IdentityRole(UserRoles.ADMIN));
-            if (!await roleManager.RoleExistsAsync(UserRoles.DEV))
-                await roleManager.CreateAsync(new IdentityRole(UserRoles.DEV));
-            if (!await roleManager.RoleExistsAsync(UserRoles.GESTIONNAIRE))
-                await roleManager.CreateAsync(new IdentityRole(UserRoles.GESTIONNAIRE));
-
-            if (await roleManager.RoleExistsAsync(UserRoles.ADMIN))
-            {
-                await userManager.AddToRoleAsync(user, UserRoles.ADMIN);
-            }
 
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });
         }
