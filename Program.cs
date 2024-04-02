@@ -61,7 +61,7 @@ builder.Services.AddScoped<IRepositoryGenericApp<MembreProjet>, RepositoryGeneri
 builder.Services.AddScoped<IRepositoryGenericApp<Tache>, RepositoryGenericApp<Tache>>();
 builder.Services.AddScoped<IRepositoryGenericApp<Imputation>, RepositoryGenericApp<Imputation>>();
 builder.Services.AddScoped<IRepositoryGenericApp<Commentaire>, RepositoryGenericApp<Commentaire>>();
- 
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 builder.Services.Configure<IISServerOptions>(options =>
 {

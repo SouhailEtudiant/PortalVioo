@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using PortalVioo.Interface;
 using PortalVioo.Models;
 using PortalVioo.ModelsApp;
+using System.Data;
 
 namespace PortalVioo.Controllers
 {
@@ -19,30 +20,41 @@ namespace PortalVioo.Controllers
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
 
-      
+
+
+        //[HttpGet]
+        //public async Task<IActionResult> GetAsync()
+        //{
+        //    try
+        //    {
+        //        var list = _repository.GetAll(null, includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet));
+        //        var dto = _mapper.Map<List<MembreProjetDTO>>(list);
+        //        for ( var i = 0;i< dto.Count; i++)
+        //        {
+        //            var user = await userManager.FindByNameAsync(dto[i].username);
+        //            var userRoles = await userManager.GetRolesAsync(user);
+        //            IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == userRoles[0].ToLower()).FirstOrDefault();
+        //            dto[i].roleMembre = roles.Name;
+        //        }
+        //        return Ok(dto);
+        //    }
+        //    catch (Exception ex) { return BadRequest(ex.Message); };
+
+
+        //}
 
         [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        public IActionResult Get()
         {
             try
             {
-                var list = _repository.GetAll(null, includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet));
-                var dto = _mapper.Map<List<MembreProjetDTO>>(list);
-                for ( var i = 0;i< dto.Count; i++)
-                {
-                    var user = await userManager.FindByNameAsync(dto[i].username);
-                    var userRoles = await userManager.GetRolesAsync(user);
-                    IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == userRoles[0].ToLower()).FirstOrDefault();
-                    dto[i].roleMembre = roles.Name;
-                }
-                return Ok(dto);
+                var list = _repository.GetAll(null, null);
+                return Ok(list);
             }
             catch (Exception ex) { return BadRequest(ex.Message); };
 
 
         }
-
-
 
 
 
@@ -57,9 +69,17 @@ namespace PortalVioo.Controllers
         [HttpPost("AddMembreProjet")]
         public IActionResult Ajout([FromBody] MembreProjet clp)
         {
-
-            var result = _repository.Add(clp);
-            if (result != null) { return Ok(result); } else { return BadRequest("Vérifier corp objet !"); }
+           var list = _repository.GetAll(null,null).Where(x=>x.IdProjet == clp.IdProjet && x.IdUtilisateur==clp.IdUtilisateur).ToList(); 
+            if (list.Count > 0)
+            {
+                return BadRequest("Utilisateur exist dans le projet");
+            }
+            else
+            {
+                var result = _repository.Add(clp);
+                if (result != null) { return Ok(result); } else { return NotFound("Vérifier corp objet !"); }
+            }
+           
 
         }
 
