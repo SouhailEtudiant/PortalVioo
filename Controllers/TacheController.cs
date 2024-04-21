@@ -12,9 +12,10 @@ namespace PortalVioo.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TacheController(IRepositoryGenericApp<Tache> repository, IMapper mapper) : ControllerBase
+    public class TacheController(IRepositoryGenericApp<Tache> repository, IRepositoryGenericApp<ParamStatus> repositorystatus , IMapper mapper) : ControllerBase
     {
         private readonly IRepositoryGenericApp<Tache> _repository = repository;
+        private readonly IRepositoryGenericApp<ParamStatus> _repositorystatus = repositorystatus;
         private readonly IMapper _mapper = mapper;
 
 
@@ -31,6 +32,28 @@ namespace PortalVioo.Controllers
                 return Ok(dto);
             }
             catch (Exception ex) { return BadRequest(ex.Message); };
+
+
+        }
+
+        [HttpGet("GetListOfLists")]
+        public IActionResult GetListOfLists()
+        {
+            List<TacheListcs> tl = new List<TacheListcs>();
+          
+
+            var listStatus = _repositorystatus.GetAll(null, null);
+            for (int i = 0; i < listStatus.Count; i++)
+
+            {
+                var list = _repository.GetAll(condition: x => x.IdStatus == listStatus[i].Id, includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
+                .Include(w => w.ParamStatus).Include(a => a.ParamPriorite).Include(e => e.ParamType));
+                var dto = _mapper.Map<List<TacheDTO>>(list);
+                var tache = new TacheListcs { idStatus = listStatus[i].Id, labelStatus = listStatus[i].LibelleStatus, listTache = dto ,nombreTache = dto.Count };
+
+                tl.Add(tache);
+            }
+            return Ok(tl);
 
 
         }
