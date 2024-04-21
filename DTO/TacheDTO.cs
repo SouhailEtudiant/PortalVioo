@@ -18,6 +18,11 @@ namespace PortalVioo.DTO
         public string IdUtilisateur { get; set; }
 
         public string username { get; set; }
+        public string nom { get; set; }
+
+        public string prenom { get; set; }
+
+
 
         public int IdPriorite { get; set; }
 
