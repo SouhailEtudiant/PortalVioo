@@ -32,7 +32,23 @@ namespace PortalVioo.Controllers
 
         }
 
-     
+
+        [HttpGet("GetImputationByUser")]
+        public IActionResult GetImputationByUser()
+        {
+            try
+            {
+                var list = _repository.GetAll(null, includes: z => z.Include(x => x.Tache));
+                var dto = _mapper.Map<List<imputationGetDTO>>(list);
+
+                return Ok(dto);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); };
+
+
+        }
+
+
 
         [HttpGet("GetID")]
         public IActionResult GetById([FromQuery] int id)

@@ -25,9 +25,6 @@ namespace PortalVioo.Controllers
         }
 
 
-
-
-
         [HttpGet("GetID")]
         public IActionResult GetById([FromQuery] int id)
         {
