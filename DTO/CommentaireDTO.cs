@@ -12,6 +12,9 @@ namespace PortalVioo.DTO
         public bool IsActive { get; set; }
         public string CreePar { get; set; }
         public string username { get; set; }
+        public string nom { get; set; }
+        public string prenom { get; set; }
+        public string userImage { get; set; }
         public int IdTache { get; set; }
         public string TacheTitle { get; set; }
 

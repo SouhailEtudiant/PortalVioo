@@ -32,7 +32,19 @@ namespace PortalVioo.Controllers
 
         }
 
+        [HttpGet("GetCommentaireByIdTache")]
+        public IActionResult GetCommentaireByIdTache([FromQuery] int id)
+        {
+            try
+            {
+                var list = _repository.GetAll(condition :  x=>x.IdTache==id, includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Tache));
+                var dto = _mapper.Map<List<CommentaireDTO>>(list);
 
+                return Ok(dto);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); };
+
+        }
 
         [HttpGet("GetID")]
         public IActionResult GetById([FromQuery] int id)

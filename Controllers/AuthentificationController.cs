@@ -261,7 +261,8 @@ namespace PortalVioo.Controllers
                     nom = user.NomUser ,
                     prenom = user.PrenomUser ,
                     img =user.ImgPath,
-                    username = user.UserName
+                    username = user.UserName , 
+                    id = user.Id ,
                 });
             }
             return Unauthorized();

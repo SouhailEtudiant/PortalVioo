@@ -46,7 +46,7 @@ namespace PortalVioo.Controllers
             for (int i = 0; i < listStatus.Count; i++)
 
             {
-                var list = _repository.GetAll(condition: x => x.IdStatus == listStatus[i].Id, includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
+                var list = _repository.GetAll(condition: x => x.IdStatus == listStatus[i].Id && x.IdTacheParent==null, includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
                 .Include(w => w.ParamStatus).Include(a => a.ParamPriorite).Include(e => e.ParamType));
                 var dto = _mapper.Map<List<TacheDTO>>(list);
                 var tache = new TacheListcs { idStatus = listStatus[i].Id, labelStatus = listStatus[i].LibelleStatus, listTache = dto ,nombreTache = dto.Count };
@@ -58,12 +58,37 @@ namespace PortalVioo.Controllers
 
         }
 
+
+        [HttpGet("GetListOfListsParProjet")]
+        public IActionResult GetListOfListsParProjet([FromQuery]int projectID)
+        {
+            List<TacheListcs> tl = new List<TacheListcs>();
+
+
+            var listStatus = _repositorystatus.GetAll(null, null);
+            for (int i = 0; i < listStatus.Count; i++)
+
+            {
+                var list = _repository.GetAll(condition: x => x.IdStatus == listStatus[i].Id && x.IdProjet == projectID
+                && x.IdTacheParent == null
+                , includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
+                .Include(w => w.ParamStatus).Include(a => a.ParamPriorite).Include(e => e.ParamType));
+                var dto = _mapper.Map<List<TacheDTO>>(list);
+                var tache = new TacheListcs { idStatus = listStatus[i].Id, labelStatus = listStatus[i].LibelleStatus, listTache = dto, nombreTache = dto.Count };
+
+                tl.Add(tache);
+            }
+            return Ok(tl);
+
+
+        }
+
         [HttpGet("GetSousTache")]
-        public IActionResult GetSousTache()
+        public IActionResult GetSousTache([FromQuery] int idparent)
         {
             try
             {
-                var list = _repository.GetAll(condition: x => x.IdTacheParent != null , includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
+                var list = _repository.GetAll(condition: x => x.IdTacheParent == idparent, includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
                 .Include(w => w.ParamStatus).Include(a => a.ParamPriorite).Include(e => e.ParamType));
                 var dto = _mapper.Map<List<TacheDTO>>(list);
 
@@ -97,8 +122,10 @@ namespace PortalVioo.Controllers
         [HttpGet("GetID")]
         public IActionResult GetById([FromQuery] int id)
         {
-            var cl = _repository.Get(id);
-            if (cl != null) { return Ok(cl); } else { return NotFound("Tache Not Found !"); }
+            var list = _repository.GetAll(condition : x=> x.Id==id, includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
+                 .Include(w => w.ParamStatus).Include(a => a.ParamPriorite).Include(e => e.ParamType));
+            var dto = _mapper.Map<List<TacheDTO>>(list);
+            if (dto != null) { return Ok(dto); } else { return NotFound("Tache Not Found !"); }
 
         }
 
@@ -116,6 +143,15 @@ namespace PortalVioo.Controllers
         {
 
             var result = _repository.Update(clp);
+            if (result != null) { return Ok(result); } else { return BadRequest("Vérifier corp objet !"); }
+
+        }
+        [HttpPost("UpdateTachebyId")]
+        public IActionResult UpdateTachebyId([FromBody] UpdateTaskStatus ts)
+        {
+            var task = _repository.Get(ts.tacheId);
+            task.IdStatus = ts.idStatus ;
+            var result = _repository.Update(task);
             if (result != null) { return Ok(result); } else { return BadRequest("Vérifier corp objet !"); }
 
         }
