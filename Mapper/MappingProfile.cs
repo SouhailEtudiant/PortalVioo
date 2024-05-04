@@ -13,6 +13,10 @@ namespace PortalVioo.Mapper
             .ForMember(d => d.TitreProjet, i => i.MapFrom(src => src.Projet.ProjetTitre))
              .ForMember(d => d.IdProjet, i => i.MapFrom(src => src.Projet.Id))
              .ForMember(d => d.IdUtilisateur, i => i.MapFrom(src => src.ApplicationUser.Id))
+
+             .ForMember(d => d.nom, i => i.MapFrom(src => src.ApplicationUser.NomUser))
+             .ForMember(d => d.prenom, i => i.MapFrom(src => src.ApplicationUser.PrenomUser))
+             .ForMember(d => d.imgpath, i => i.MapFrom(src => src.ApplicationUser.ImgPath))
              .ReverseMap();
 
             CreateMap<Tache, TacheDTO>().ForMember(d => d.username, i => i.MapFrom(src => src.ApplicationUser.UserName))

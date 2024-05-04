@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using MiniProjectBack.ModelsAuth;
 using PortalVioo.Interface;
 using PortalVioo.Models;
+using PortalVioo.ModelsApp;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,13 +21,62 @@ namespace PortalVioo.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthentificationController(IEmailSender emailSender,IRepositoryGenericApp<ApplicationUser> repository, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration) : ControllerBase
+    public class AuthentificationController(IEmailSender emailSender,IRepositoryGenericApp<ApplicationUser> repository
+        , UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration
+        , IRepositoryGenericApp<MembreProjet> repositoryMembre) : ControllerBase
     {
         private readonly UserManager<ApplicationUser> userManager = userManager;
         private readonly RoleManager<IdentityRole> roleManager = roleManager;
         private readonly IConfiguration _configuration = configuration;
         private readonly IEmailSender _emailSender = emailSender;
         private readonly IRepositoryGenericApp<ApplicationUser> _repository = repository;
+        private readonly IRepositoryGenericApp<MembreProjet> _repositoryMembre = repositoryMembre;
+
+        [HttpGet]
+        [Route("GetMembers")]
+        public async Task<IActionResult> GetMembers([FromQuery] int idProjet)
+        {
+            var membreList = _repositoryMembre.GetAll(condition: x => x.IdProjet == idProjet, null);
+            List<ApplicationUser> listUser = new List<ApplicationUser>();
+            List<UserDetailWithProject> listUserWithRole = new List<UserDetailWithProject>();
+            for (int i = 0; i < membreList.Count; i++)
+            {
+                var cl = _repository.GetAll(condition: x=>x.Id == membreList[i].IdUtilisateur, null).FirstOrDefault();
+                listUser.Add(cl);
+            }
+         //   var listUser = _repository.GetAll(null, null);
+            foreach (var user in listUser)
+            {
+                var role = await userManager.GetRolesAsync(user);
+                IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == role[0].ToLower()).FirstOrDefault();
+                UserDetailWithProject usrsRole = new UserDetailWithProject();
+                usrsRole.UserId = user.Id;
+                usrsRole.RoleId = roles.Id;
+                usrsRole.RoleNormalizedName = roles.NormalizedName;
+                usrsRole.Username = user.UserName;
+                usrsRole.Email = user.Email;
+                usrsRole.Role = roles.Name;
+                usrsRole.nom = user.NomUser;
+                usrsRole.prenom = user.PrenomUser;
+                usrsRole.imagePath = user.ImgPath;
+                usrsRole.idProjet = idProjet;
+                listUserWithRole.Add(usrsRole);
+
+            }
+
+          
+                return Ok(listUserWithRole);
+        }
+
+
+
+
+
+
+
+
+
+
 
 
         [HttpGet]
@@ -218,6 +268,52 @@ namespace PortalVioo.Controllers
             }
             return Ok(filteredList);
         }
+
+        private bool checkUserExistInProject(string userId, int projectId)
+        {
+            var list = _repositoryMembre.GetAll(condition: x => x.IdUtilisateur == userId && x.IdProjet == projectId, null).FirstOrDefault();
+
+            if (list == null)
+                return false;
+            else return true;
+        }
+
+
+        [HttpGet]
+        [Route("GetUsersMembers")]
+        public async Task<IActionResult> GetUsersMembers()
+        {
+            List<getuserwthrole> listUserWithRole = new List<getuserwthrole>();
+            List<getuserwthrole> filteredList = new List<getuserwthrole>();
+            var listUser = _repository.GetAll(null, null);
+            foreach (var user in listUser)
+            {
+                var role = await userManager.GetRolesAsync(user);
+                IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == role[0].ToLower()).FirstOrDefault();
+                getuserwthrole usrsRole = new getuserwthrole();
+
+                usrsRole.UserId = user.Id;
+                usrsRole.RoleId = roles.Id;
+                usrsRole.RoleNormalizedName = roles.NormalizedName;
+                usrsRole.Username = user.UserName;
+                usrsRole.Email = user.Email;
+                usrsRole.Role = roles.Name;
+                usrsRole.nom = user.NomUser;
+                usrsRole.prenom = user.PrenomUser;
+                usrsRole.imagePath = user.ImgPath;
+                listUserWithRole.Add(usrsRole);
+                filteredList = listUserWithRole.Where(x => x.RoleNormalizedName != "GESTIONNAIRE" && x.RoleNormalizedName != "ADMINSTRATEUR").ToList();
+
+
+            }
+            return Ok(filteredList);
+        }
+
+
+
+
+
+
 
         [HttpPost]
         [Route("login")]

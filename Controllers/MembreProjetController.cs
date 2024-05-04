@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MiniProjectBack.ModelsAuth;
+using PortalVioo.DTO;
 using PortalVioo.Interface;
 using PortalVioo.Models;
 using PortalVioo.ModelsApp;
@@ -14,15 +16,18 @@ namespace PortalVioo.Controllers
     [ApiController]
     public class MembreProjetController(IRepositoryGenericApp<MembreProjet> repository ,
         IRepositoryGenericApp<Projet> repositoryProjet, IMapper mapper
-        , UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager ) : ControllerBase
+        , UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager,
+        IRepositoryGenericApp<ApplicationUser> repositoryUser) : ControllerBase
     {
         private readonly IRepositoryGenericApp<Projet> _repositoryProjet = repositoryProjet;
         private readonly IRepositoryGenericApp<MembreProjet> _repository = repository;
         private readonly IMapper _mapper = mapper;
         private readonly UserManager<ApplicationUser> _userManager = userManager;
         private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+        private readonly IRepositoryGenericApp<ApplicationUser> _repositoryUser = repositoryUser;
 
- 
+
+
 
         [HttpGet]
         public IActionResult Get()
@@ -48,10 +53,51 @@ namespace PortalVioo.Controllers
                 var cl = _repositoryProjet.Get(list[i].IdProjet);
                 pr.Add(cl);
             }
-            
+          
             return Ok(pr);
             
-            
+
+        }
+
+        private bool checkUserExistInProject (string userId , int projectId)
+        {
+            var list = _repository.GetAll(condition: x => x.IdUtilisateur == userId && x.IdProjet==projectId, null).FirstOrDefault();
+
+            if (list == null)
+                return false;
+            else return true; 
+        }
+
+        [HttpGet("GetNotAffectedUser")]
+        public async Task<IActionResult> GetNotAffectedUser([FromQuery] int projetId)
+             
+        {
+            var listUser = _repositoryUser.GetAll(null, null);
+            List<getuserwthrole> listUserWithRole = new List<getuserwthrole>();
+            foreach (var user in listUser)
+            {
+                var role = await _userManager.GetRolesAsync(user);
+                IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == role[0].ToLower()).FirstOrDefault();
+                getuserwthrole usrsRole = new getuserwthrole();
+
+                usrsRole.UserId = user.Id;
+                usrsRole.RoleId = roles.Id;
+                usrsRole.RoleNormalizedName = roles.NormalizedName;
+                usrsRole.Username = user.UserName;
+                usrsRole.Email = user.Email;
+                usrsRole.Role = roles.Name;
+                usrsRole.nom = user.NomUser;
+                usrsRole.prenom = user.PrenomUser;
+                usrsRole.imagePath = user.ImgPath;
+                if(! checkUserExistInProject(usrsRole.UserId, projetId) && (usrsRole.RoleNormalizedName != "GESTIONNAIRE" && usrsRole.RoleNormalizedName != "ADMINSTRATEUR"))
+                {
+                    listUserWithRole.Add(usrsRole);
+                }
+              
+
+
+            }
+            return Ok(listUserWithRole);
 
 
         }
@@ -92,12 +138,17 @@ namespace PortalVioo.Controllers
 
         }
 
-        [HttpPost("DeleteMembreProjet")]
-        public IActionResult Delete([FromQuery] int id)
+        [HttpDelete("DeleteMembreProjet")]
+        public IActionResult Delete([FromQuery] int idProjet ,[FromQuery] string idUser)
         {
-            var result = _repository.Delete(id);
+            var list = _repository.GetAll(null, null).Where(x => x.IdProjet == idProjet && x.IdUtilisateur == idUser).FirstOrDefault();
+            if ( list!= null)
+            {
+                var result = _repository.Delete(list.IdMembrePorjet);
+                return Ok(result);
 
-            if (result != null) { return Ok(result); } else { return NotFound("MembreProjet Not Found !"); }
+            }
+            else { return NotFound("MembreProjet Not Found !"); }
         }
     }
 }

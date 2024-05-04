@@ -1,6 +1,6 @@
 ﻿namespace MiniProjectBack.ModelsAuth
 {
-    public class UserDetailWithProject
+    public class getuserwthrole
     {
         public string UserId { get; set; }
         public string Username { get; set; }
@@ -11,6 +11,5 @@
         public string nom { get; set; }
         public string prenom { get; set; }
         public string imagePath { get; set; }
-        public int idProjet { get; set; }
     }
 }

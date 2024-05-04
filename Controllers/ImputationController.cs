@@ -61,7 +61,6 @@ namespace PortalVioo.Controllers
         [HttpPost("AddImputation")]
         public IActionResult Ajout([FromBody] Imputation clp)
         {
-
             var result = _repository.Add(clp);
             if (result != null) { return Ok(result); } else { return BadRequest("Vérifier corp objet !"); }
 
