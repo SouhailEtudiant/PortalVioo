@@ -75,7 +75,7 @@ namespace PortalVioo.Controllers
 
         }
 
-        [HttpPost("DeleteImputation")]
+        [HttpDelete("DeleteImputation")]
         public IActionResult Delete([FromQuery] int id)
         {
             var result = _repository.Delete(id);
