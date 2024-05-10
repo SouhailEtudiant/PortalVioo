@@ -72,7 +72,7 @@ namespace PortalVioo.Controllers
 
         }
 
-        [HttpPost("DeleteCommentaire")]
+        [HttpDelete("DeleteCommentaire")]
         public IActionResult Delete([FromQuery] int id)
         {
             var result = _repository.Delete(id);
