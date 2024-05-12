@@ -70,13 +70,55 @@ namespace PortalVioo.Controllers
 
 
 
+        [HttpGet]
+        [Route("GetNumberOfUsers")]
+        public async Task<IActionResult> GetNumberOfUsersAsync()
+        {
+            List<NumberUsers> ListNumbers = new List<NumberUsers>();
+            for (int i = 0; i < 4; i++)
+            {
+                NumberUsers nb = new NumberUsers() { Id = i, nom = "",nombre=0 };
+                ListNumbers.Add(nb);
+            }
+
+            var listUser = _repository.GetAll(null, null).ToList();
+
+            ListNumbers[0].nom = "Nombre Total d'utilisateur";
+            ListNumbers[1].nom = "Nombre Total des administrateur";
+            ListNumbers[2].nom = "Nombre Total des gestionnaire";
+            ListNumbers[3].nom = "Nombre Total d'Employee";
+
+            foreach (var user in listUser)
+            {
+                ListNumbers[0].nombre++; 
+                var role = await userManager.GetRolesAsync(user);
+                IdentityRole roles = roleManager.Roles.Where(x => x.Name.ToLower() == role[0].ToLower()).FirstOrDefault();
+                UserDetailWithProject usrsRole = new UserDetailWithProject();
+                usrsRole.UserId = user.Id;
+                usrsRole.RoleId = roles.Id;
+                usrsRole.RoleNormalizedName = roles.NormalizedName;
+                usrsRole.Username = user.UserName;
+                usrsRole.Email = user.Email;
+                usrsRole.Role = roles.Name;
+                usrsRole.nom = user.NomUser;
+                usrsRole.prenom = user.PrenomUser;
+                usrsRole.imagePath = user.ImgPath;
+
+                if (usrsRole.RoleNormalizedName == "ADMINSTRATEUR")
+                {
+                    ListNumbers[1].nombre++;
+                }
+
+               else if (usrsRole.RoleNormalizedName == "GESTIONNAIRE")
+                    ListNumbers[2].nombre++;
+
+                else ListNumbers[3].nombre++;
+
+            }
 
 
-
-
-
-
-
+            return Ok(ListNumbers);
+        }
 
 
         [HttpGet]

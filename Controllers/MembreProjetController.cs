@@ -42,6 +42,28 @@ namespace PortalVioo.Controllers
 
         }
 
+        [HttpGet("NombreEmployeeParProjet")]
+        public IActionResult GetNombreEmployeeParProjet()
+        {
+          
+            var ListProjet = _repositoryProjet.GetAll(null, null);
+            List<Dashboard> dashboards = new List<Dashboard>();
+            
+            foreach (var projet in ListProjet)
+            {
+                var nombreMembre = _repository.GetAll(condition: x=> x.IdProjet==projet.Id, null).Count();
+                Dashboard dash = new Dashboard();
+                dash.libelle = projet.ProjetTitre;
+                dash.nombre = nombreMembre;
+                dashboards.Add(dash); 
+            }
+
+            return Ok(dashboards);
+
+
+        }
+
+
         [HttpGet("GetProjetParUser")]
         public IActionResult GetProjetParUser([FromQuery] string userId)
         {

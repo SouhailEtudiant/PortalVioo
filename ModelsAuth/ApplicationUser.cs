@@ -17,6 +17,5 @@ namespace PortalVioo.Models
         public string PrenomUser { get; set; }
         public string? ImgPath { get; set; }
 
-
     }
 }
