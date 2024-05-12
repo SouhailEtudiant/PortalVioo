@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using PortalVioo.DTO;
 using PortalVioo.Interface;
 using PortalVioo.Models;
@@ -12,9 +13,12 @@ namespace PortalVioo.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TacheController(IRepositoryGenericApp<Tache> repository, IRepositoryGenericApp<ParamStatus> repositorystatus , IMapper mapper) : ControllerBase
+    public class TacheController(IRepositoryGenericApp<Tache> repository,
+        IRepositoryGenericApp<Projet> repositoryProjet,
+        IRepositoryGenericApp<ParamStatus> repositorystatus , IMapper mapper) : ControllerBase
     {
         private readonly IRepositoryGenericApp<Tache> _repository = repository;
+        private readonly IRepositoryGenericApp<Projet> _repositoryProjet = repositoryProjet;
         private readonly IRepositoryGenericApp<ParamStatus> _repositorystatus = repositorystatus;
         private readonly IMapper _mapper = mapper;
 
@@ -35,6 +39,33 @@ namespace PortalVioo.Controllers
 
 
         }
+
+
+        [HttpGet("dashboardMultiLine")]
+        public IActionResult dashboardMultiLine()
+        {
+
+            var ListProjet = _repositoryProjet.GetAll(null, null);
+            List<dashboardMultipleLine> dashboards = new List<dashboardMultipleLine>();
+                    foreach (var proj in ListProjet)
+                    {
+                        var tacheEnCours = _repository.GetAll(condition: x => x.IdStatus == 3 && x.IdProjet==proj.Id, null).Count();
+                        var tacheTermine = _repository.GetAll(condition: x => x.IdStatus == 4 && x.IdProjet == proj.Id, null).Count();
+                        var tacheBogue = _repository.GetAll(condition: x => x.IdStatus == 6 && x.IdProjet == proj.Id, null).Count();
+
+                         dashboardMultipleLine dash = new dashboardMultipleLine();
+                        dash.libelle = proj.ProjetTitre;
+                        dash.tacheEnCours = tacheEnCours;
+                         dash.tacheTermine = tacheTermine;
+                         dash.tacheBug = tacheBogue;
+                        dashboards.Add(dash);
+                    }  
+
+            return Ok(dashboards);
+
+
+        }
+
 
         [HttpGet("GetListOfLists")]
         public IActionResult GetListOfLists()
