@@ -42,6 +42,20 @@ namespace PortalVioo.Controllers
 
         }
 
+        [HttpGet("GetMemberShipInProject")]
+        public IActionResult GetMemberShipInProject([FromQuery] int projetId)
+        {
+            try
+            {
+                var list = _repository.GetAll(condition: x=> x.IdProjet==projetId, includes:z=> z.Include(b => b.ApplicationUser));
+                var dto = _mapper.Map<List<MembreProjetDTO>>(list);
+                return Ok(dto);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); };
+
+
+        }
+
         [HttpGet("NombreEmployeeParProjet")]
         public IActionResult GetNombreEmployeeParProjet()
         {
