@@ -15,7 +15,45 @@ namespace PortalVioo.Controllers
         private readonly IRepositoryGenericApp<Imputation> _repository = repository;
         private readonly IMapper _mapper = mapper;
 
+        [HttpGet("DashboardImputation")]
+        public IActionResult DashboardImputation([FromQuery] string userId)
+        {
 
+           var ListImp = _repository.GetAll(condition: x=> x.IdUtilisateur==userId && x.date.Month == DateTime.Now.Month);
+            List<DashboardImp> dashboards = new List<DashboardImp>();
+
+            foreach (var item in ListImp)
+            {
+                if (! dashboards.Any(x => x.libelle == item.date.ToString()))
+                {
+                    var ll = _repository.GetAll(condition: x => x.IdUtilisateur == userId && x.date == item.date);
+                    if(ll.Count() > 1)
+                    {
+                        DashboardImp dash = new DashboardImp();
+                        foreach (var im  in ll)
+                        {
+                            dash.nombre += im.chargeEnHeure;
+                        }
+                        dash.libelle= item.date.ToString();
+                        dashboards.Add(dash);
+                    }
+                    else
+                    {
+                        DashboardImp dash = new DashboardImp()
+                        {
+                            libelle = item.date.ToString(),
+                            nombre = item.chargeEnHeure
+                        };
+                        dashboards.Add(dash);
+                    }
+
+                }
+            }
+
+            return Ok(dashboards);
+
+
+        }
 
         [HttpGet]
         public IActionResult Get()

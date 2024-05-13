@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using MiniProjectBack.ModelsAuth;
 using PortalVioo.DTO;
 using PortalVioo.Interface;
 using PortalVioo.Models;
@@ -15,11 +16,13 @@ namespace PortalVioo.Controllers
     [ApiController]
     public class TacheController(IRepositoryGenericApp<Tache> repository,
         IRepositoryGenericApp<Projet> repositoryProjet,
-        IRepositoryGenericApp<ParamStatus> repositorystatus , IMapper mapper) : ControllerBase
+        IRepositoryGenericApp<ParamStatus> repositorystatus , IMapper mapper,
+         IRepositoryGenericApp<MembreProjet> repositoryMembreProjet) : ControllerBase
     {
         private readonly IRepositoryGenericApp<Tache> _repository = repository;
         private readonly IRepositoryGenericApp<Projet> _repositoryProjet = repositoryProjet;
         private readonly IRepositoryGenericApp<ParamStatus> _repositorystatus = repositorystatus;
+        private readonly IRepositoryGenericApp<MembreProjet> _repositoryMembreProjet = repositoryMembreProjet;
         private readonly IMapper _mapper = mapper;
 
 
@@ -38,6 +41,44 @@ namespace PortalVioo.Controllers
             catch (Exception ex) { return BadRequest(ex.Message); };
 
 
+        }
+
+        [HttpGet]
+        [Route("GetNombreOfTasks")]
+        public IActionResult GetNombreOfTasks([FromQuery]string userId)
+        {
+            List<NumberUsers> ListNumbers = new List<NumberUsers>();
+            for (int i = 0; i < 4; i++)
+            {
+                NumberUsers nb = new NumberUsers() { Id = i, nom = "", nombre = 0 };
+                ListNumbers.Add(nb);
+            }
+
+            var ListTache = _repository.GetAll(condition: x=> x.IdUtilisateur==userId, null).ToList();
+
+            ListNumbers[0].nom = "Nombre Total des Taches";
+            ListNumbers[1].nom = "Nombre Total des Bogues";
+            ListNumbers[2].nom = "Nombre des Taches en cours";
+            ListNumbers[3].nom = "Nombre des Taches Terminé";
+
+            foreach (var Tache in ListTache)
+            {
+                ListNumbers[0].nombre++;
+                
+                if (Tache.IdStatus == 6)
+                {
+                    ListNumbers[1].nombre++;
+                }
+
+                else if (Tache.IdStatus == 3)
+                    ListNumbers[2].nombre++;
+                else if (Tache.IdStatus == 4)
+                  ListNumbers[3].nombre++;
+
+            }
+
+
+            return Ok(ListNumbers);
         }
 
 
@@ -65,6 +106,40 @@ namespace PortalVioo.Controllers
 
 
         }
+
+        [HttpGet("dashboardMultiLineUser")]
+        public IActionResult dashboardMultiLineUser([FromQuery] string userId)
+        {
+          
+            var ListProjetInMembre = _repositoryMembreProjet.GetAll(condition: x =>x.IdUtilisateur==userId, null);
+            List<Projet> ListProjet = new List<Projet>();
+            foreach (var  membre in ListProjetInMembre)
+            {
+                var projet = _repositoryProjet.Get(membre.IdProjet);
+                ListProjet.Add(projet); 
+
+
+            }
+            List<dashboardMultipleLine> dashboards = new List<dashboardMultipleLine>();
+            foreach (var proj in ListProjet)
+            {
+                var tacheEnCours = _repository.GetAll(condition: x => x.IdStatus == 3 && x.IdProjet == proj.Id && x.IdUtilisateur==userId , null).Count();
+                var tacheTermine = _repository.GetAll(condition: x => x.IdStatus == 4 && x.IdProjet == proj.Id && x.IdUtilisateur == userId, null).Count();
+                var tacheBogue = _repository.GetAll(condition: x => x.IdStatus == 6 && x.IdProjet == proj.Id && x.IdUtilisateur == userId, null).Count();
+
+                dashboardMultipleLine dash = new dashboardMultipleLine();
+                dash.libelle = proj.ProjetTitre;
+                dash.tacheEnCours = tacheEnCours;
+                dash.tacheTermine = tacheTermine;
+                dash.tacheBug = tacheBogue;
+                dashboards.Add(dash);
+            }
+
+            return Ok(dashboards);
+
+
+        }
+
 
 
         [HttpGet("GetListOfLists")]
