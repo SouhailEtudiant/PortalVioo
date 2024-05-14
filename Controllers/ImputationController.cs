@@ -72,13 +72,23 @@ namespace PortalVioo.Controllers
 
 
         [HttpGet("GetImputationByUser")]
-        public IActionResult GetImputationByUser()
+        public IActionResult GetImputationByUser([FromQuery] string UserId)
         {
             try
             {
-                var list = _repository.GetAll(null, includes: z => z.Include(x => x.Tache));
+                var list = _repository.GetAll(condition:x=>x.IdUtilisateur==UserId, includes: z => z.Include(x => x.Tache));
                 var dto = _mapper.Map<List<imputationGetDTO>>(list);
+                foreach (var item in dto)
+                {
+                    if (item.prioriteId == 1 || item.prioriteId == 3)
+                        item.borderColor = "red";
+                    else if (item.prioriteId == 2)
+                        item.borderColor = "yellow";
+                    else if (item.prioriteId == 4)
+                        item.borderColor = "green";
+                    else item.borderColor = "blue"; 
 
+                }
                 return Ok(dto);
             }
             catch (Exception ex) { return BadRequest(ex.Message); };
