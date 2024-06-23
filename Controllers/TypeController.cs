@@ -24,6 +24,19 @@ namespace PortalVioo.Controllers
 
         }
 
+        [HttpGet("ActiveType")]
+        public IActionResult ActiveType()
+        {
+            try
+            {
+                var list = _repository.GetAll(condition: x => x.IsActive, null);
+                return Ok(list);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); };
+
+
+        }
+
 
         [HttpPost("ChangerStatus")]
         public IActionResult Changertatus([FromBody] ParamType clp)

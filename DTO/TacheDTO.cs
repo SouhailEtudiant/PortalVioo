@@ -43,6 +43,8 @@ namespace PortalVioo.DTO
 
         public int IdTacheParent { get; set; }
 
-        
+        public string retard { get; set; }
+
+
     }
 }

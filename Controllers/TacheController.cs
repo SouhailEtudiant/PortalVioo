@@ -181,6 +181,16 @@ namespace PortalVioo.Controllers
                     , includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
                     .Include(w => w.ParamStatus).Include(a => a.ParamPriorite).Include(e => e.ParamType));
                     var dto = _mapper.Map<List<TacheDTO>>(list);
+                   foreach (var item in dto)
+                    {
+                        if (item.DateFin > DateOnly.FromDateTime(DateTime.Now))
+                        {
+                            item.retard = "1";
+                        }
+                        else if (item.DateFin < DateOnly.FromDateTime(DateTime.Now))
+                            item.retard = "-1";
+                        else item.retard = "0"; 
+                    }
                     var tache = new TacheListcs { idStatus = listStatus[i].Id, labelStatus = listStatus[i].LibelleStatus, listTache = dto, nombreTache = dto.Count };
 
                     tl.Add(tache);
@@ -197,6 +207,16 @@ namespace PortalVioo.Controllers
                     , includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
                     .Include(w => w.ParamStatus).Include(a => a.ParamPriorite).Include(e => e.ParamType));
                     var dto = _mapper.Map<List<TacheDTO>>(list);
+                    foreach (var item in dto)
+                    {
+                        if (item.DateFin > DateOnly.FromDateTime(DateTime.Now))
+                        {
+                            item.retard = "1";
+                        }
+                        else if (item.DateFin < DateOnly.FromDateTime(DateTime.Now))
+                            item.retard = "-1";
+                        else item.retard = "0";
+                    }
                     var tache = new TacheListcs { idStatus = listStatus[i].Id, labelStatus = listStatus[i].LibelleStatus, listTache = dto, nombreTache = dto.Count };
 
                     tl.Add(tache);
