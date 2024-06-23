@@ -27,7 +27,18 @@ namespace PortalVioo.Controllers
 
         }
 
+        [HttpGet("ActivePriorite")]
+        public IActionResult GetActivePriorite()
+        {
+            try
+            {
+                var list = _repository.GetAll(condition: x=>x.IsActive, null);
+                return Ok(list);
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); };
 
+
+        }
 
 
 

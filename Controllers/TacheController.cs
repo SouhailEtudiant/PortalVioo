@@ -166,24 +166,63 @@ namespace PortalVioo.Controllers
 
 
         [HttpGet("GetListOfListsParProjet")]
-        public IActionResult GetListOfListsParProjet([FromQuery]int projectID)
+        public IActionResult GetListOfListsParProjet([FromQuery]int projectID, [FromQuery] string? userId)
         {
             List<TacheListcs> tl = new List<TacheListcs>();
 
-
-            var listStatus = _repositorystatus.GetAll(null, null);
-            for (int i = 0; i < listStatus.Count; i++)
-
+            if(userId==null)
             {
-                var list = _repository.GetAll(condition: x => x.IdStatus == listStatus[i].Id && x.IdProjet == projectID
-                && x.IdTacheParent == null
-                , includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
-                .Include(w => w.ParamStatus).Include(a => a.ParamPriorite).Include(e => e.ParamType));
-                var dto = _mapper.Map<List<TacheDTO>>(list);
-                var tache = new TacheListcs { idStatus = listStatus[i].Id, labelStatus = listStatus[i].LibelleStatus, listTache = dto, nombreTache = dto.Count };
+                var listStatus = _repositorystatus.GetAll(null, null);
+                for (int i = 0; i < listStatus.Count; i++)
 
-                tl.Add(tache);
+                {
+                    var list = _repository.GetAll(condition: x => x.IdStatus == listStatus[i].Id && x.IdProjet == projectID
+                    && x.IdTacheParent == null
+                    , includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
+                    .Include(w => w.ParamStatus).Include(a => a.ParamPriorite).Include(e => e.ParamType));
+                    var dto = _mapper.Map<List<TacheDTO>>(list);
+                   foreach (var item in dto)
+                    {
+                        if (item.DateFin > DateOnly.FromDateTime(DateTime.Now))
+                        {
+                            item.retard = "1";
+                        }
+                        else if (item.DateFin < DateOnly.FromDateTime(DateTime.Now))
+                            item.retard = "-1";
+                        else item.retard = "0"; 
+                    }
+                    var tache = new TacheListcs { idStatus = listStatus[i].Id, labelStatus = listStatus[i].LibelleStatus, listTache = dto, nombreTache = dto.Count };
+
+                    tl.Add(tache);
+                }
             }
+            else
+            {
+                var listStatus = _repositorystatus.GetAll(null, null);
+                for (int i = 0; i < listStatus.Count; i++)
+
+                {
+                    var list = _repository.GetAll(condition: x => x.IdStatus == listStatus[i].Id && x.IdProjet == projectID
+                    && x.IdTacheParent == null && x.IdUtilisateur==userId
+                    , includes: z => z.Include(b => b.ApplicationUser).Include(x => x.Projet)
+                    .Include(w => w.ParamStatus).Include(a => a.ParamPriorite).Include(e => e.ParamType));
+                    var dto = _mapper.Map<List<TacheDTO>>(list);
+                    foreach (var item in dto)
+                    {
+                        if (item.DateFin > DateOnly.FromDateTime(DateTime.Now))
+                        {
+                            item.retard = "1";
+                        }
+                        else if (item.DateFin < DateOnly.FromDateTime(DateTime.Now))
+                            item.retard = "-1";
+                        else item.retard = "0";
+                    }
+                    var tache = new TacheListcs { idStatus = listStatus[i].Id, labelStatus = listStatus[i].LibelleStatus, listTache = dto, nombreTache = dto.Count };
+
+                    tl.Add(tache);
+                }
+            }
+           
             return Ok(tl);
 
 
