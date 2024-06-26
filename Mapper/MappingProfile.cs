@@ -42,7 +42,9 @@ namespace PortalVioo.Mapper
             CreateMap<Imputation, imputationGetDTO>()
                 .ForMember(d => d.id, i => i.MapFrom(src => src.Id))
            .ForMember(d => d.title, i => i.MapFrom(src => src.Tache.TacheTitre))
+            .ForMember(d => d.tacheId, i => i.MapFrom(src => src.Tache.Id))
             .ForMember(d => d.start, i => i.MapFrom(src => src.date))
+             .ForMember(d => d.description, i => i.MapFrom(src => src.chargeEnHeure))
              .ForMember(d => d.prioriteId, i => i.MapFrom(src => src.Tache.IdPriorite))
             .ReverseMap();
 

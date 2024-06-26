@@ -39,6 +39,7 @@ namespace PortalVioo.Controllers
             var membreList = _repositoryMembre.GetAll(condition: x => x.IdProjet == idProjet, null);
             List<ApplicationUser> listUser = new List<ApplicationUser>();
             List<UserDetailWithProject> listUserWithRole = new List<UserDetailWithProject>();
+            List<UserDetailWithProject> filteredList = new List<UserDetailWithProject>();
             for (int i = 0; i < membreList.Count; i++)
             {
                 var cl = _repository.GetAll(condition: x=>x.Id == membreList[i].IdUtilisateur, null).FirstOrDefault();
@@ -61,11 +62,13 @@ namespace PortalVioo.Controllers
                 usrsRole.imagePath = user.ImgPath;
                 usrsRole.idProjet = idProjet;
                 listUserWithRole.Add(usrsRole);
+                filteredList = listUserWithRole.Where(x => x.RoleNormalizedName != "GESTIONNAIRE" && x.RoleNormalizedName != "ADMINSTRATEUR").ToList();
+
 
             }
 
-          
-                return Ok(listUserWithRole);
+
+            return Ok(filteredList);
         }
 
 
